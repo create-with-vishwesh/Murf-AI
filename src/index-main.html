@@ -379,15 +379,10 @@
                 </div>
 
                 <div class="stack">
-                    <div class="title">Voice & Language</div>
+                    <div class="title">Voice</div>
                     <div class="row" style="width:100%">
                         <select id="voiceSelect" class="flex-1" disabled>
                             <option>Voices will appear after Murf integration</option>
-                        </select>
-                    </div>
-                    <div class="row" style="width:100%">
-                        <select id="langSelect" class="flex-1" disabled>
-                            <option>Languages will appear after Murf integration</option>
                         </select>
                     </div>
                 </div>
@@ -718,29 +713,74 @@
         // Murf Integration Placeholders
         // -----------------------------------------------
         async function fetchMurfVoices() {
-            // TODO: Replace with Murf voices endpoint call using your backend proxy.
-            // 1) Call your server: GET /api/murf/voices  (server adds Authorization header securely)
-            // 2) Populate #voiceSelect and #langSelect with results.
-            // Keep disabled until integrated.
-            return [];
+            return [
+              { voiceId: 'en-US-claire', name: 'Claire (F, US English)' },
+              { voiceId: 'en-US-natalie', name: 'Natalie (F, US English)' },
+              { voiceId: 'en-US-michelle', name: 'Michelle (F, US English)' },
+              { voiceId: 'en-US-ronnie', name: 'Ronnie (M, US English)' },
+              { voiceId: 'en-US-ryan', name: 'Ryan (M, US English)' },
+              { voiceId: 'en-US-caleb', name: 'Caleb (M, US English)' }
+            ];
         }
 
-        async function speakWithMurf(text) {
+  async function speakWithMurf(text) {
       // Murf TTS integration: call backend, play audio, fallback to browser speech on error
+      const voiceSelect = document.getElementById('voiceSelect');
+      const voiceId = voiceSelect && voiceSelect.value ? voiceSelect.value : 'en-US-claire';
       try {
         stopSpeaking();
-        const response = await fetch('http://localhost:5000/api/tts', {
+        voiceSelect.disabled = true;
+        console.log('Requesting Murf TTS with voice:', voiceId);
+        const resp = await fetch('http://localhost:5000/api/tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
+          body: JSON.stringify({ text, voiceId })
         });
-        const data = await response.json();
-        if (!response.ok || !data.audioUrl) throw new Error(data.error || 'TTS failed');
-        player.src = data.audioUrl;
-        player.hidden = false;
-        await player.play();
+
+        const body = await resp.json();
+        if (resp.ok && body.audioUrl) {
+          // prefer proxied URL if available to avoid browser CORS/mixed-content
+          const src = body.proxyUrl ? body.proxyUrl : body.audioUrl;
+          player.src = src;
+          player.hidden = false;
+          await player.play();
+          voiceSelect.disabled = false;
+          return;
+        }
+
+        if (resp.status === 202 && (body.jobId || body.id)) {
+          const jobId = body.jobId || body.id;
+          console.log('Received jobId, polling status:', jobId);
+          // poll status endpoint
+          const max = 20;
+          for (let i = 0; i < max; i++) {
+            await new Promise(r => setTimeout(r, 1000));
+            try {
+              const s = await fetch(`http://localhost:5000/api/tts/status/${jobId}`);
+              const sb = await s.json();
+              if (s.ok && sb.audioUrl) {
+                const src = sb.proxyUrl ? sb.proxyUrl : sb.audioUrl;
+                player.src = src;
+                player.hidden = false;
+                await player.play();
+                voiceSelect.disabled = false;
+                return;
+              }
+              console.log('Status poll:', sb.status || sb);
+            } catch (pollErr) {
+              console.warn('Status poll error', pollErr);
+            }
+          }
+          console.warn('Polling timed out');
+        }
+
+        // fallback
+        console.error('Murf TTS failed, falling back to browser speech:', body);
+        voiceSelect.disabled = false;
+        speak(text);
       } catch (err) {
-        console.error('Murf TTS failed, falling back to browser speech:', err);
+        console.error('Murf TTS request error, falling back:', err);
+        voiceSelect.disabled = false;
         speak(text);
       }
         }
@@ -799,7 +839,16 @@
         render(initialIndex === -1 ? 0 : initialIndex);
 
         // Optional: prefetch future Murf data later
-        // fetchMurfVoices();
+        fetchMurfVoices().then(voices => {
+          voiceSelect.innerHTML = '';
+          voices.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.voiceId;
+            opt.textContent = v.name;
+            voiceSelect.appendChild(opt);
+          });
+          voiceSelect.disabled = false;
+        });
     </script>
 </body>
 
