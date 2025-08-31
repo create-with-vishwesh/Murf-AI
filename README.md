@@ -1,4 +1,4 @@
-# ReciVo — Smart Recipe Voice Assistant
+# ReciVo - Smart Recipe Voice Assistant
 
 Lightweight demo app showing Murf.ai text-to-speech integration for the ReciVo voice recipe assistant.
 
