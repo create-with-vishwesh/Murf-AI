@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReciVo - Sign Up / Login</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <style>
+        :root {
+            --bg1: #0b1220;
+            --card: #0e172a;
+            --muted: #9aa6c1;
+            --text: #e6efff;
+            --accent: #7aa2ff;
+            --danger: #ff6b6b;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            color: var(--text);
+            background: radial-gradient(1200px 800px at 80% -10%, #24325f 0%, var(--bg1) 50%), linear-gradient(180deg, #0a0f1f, var(--bg1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Cursor Glow */
+        .cursor-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(122, 162, 255, 0.18), transparent 70%);
+            pointer-events: none;
+            transform: translate(-40%, -40%);
+            z-index: 0;
+            transition: transform 0.05s ease-out;
+        }
+
+        .auth-container {
+            background: rgba(14, 23, 42, 0.92);
+            border-radius: 18px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+            padding: 36px 28px 28px 28px;
+            width: 100%;
+            max-width: 370px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .brand-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
+
+        .logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(122, 162, 255, .25), rgba(158, 240, 163, .25));
+            display: grid;
+            place-items: center;
+            margin-bottom: 8px;
+        }
+
+        .logo img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        h2 {
+            margin: 0 0 8px 0;
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: .2px;
+        }
+
+        .tab-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .tab-btn {
+            width: 150px;
+            flex: 1;
+            padding: 10px 0;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            background: none;
+            color: var(--muted);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .18s, color .18s;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: #08112b;
+        }
+
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+            opacity: 1;
+            transition: opacity 0.4s;
+        }
+
+        label {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 2px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 90%;
+            padding: 11px 12px;
+            border-radius: 10px;
+            border: 1.5px solid rgba(255, 255, 255, 0.13);
+            background: #10182b;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+            margin: 0 auto;
+            display: block;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(122, 162, 255, 0.18);
+        }
+
+        .btn {
+            width: 98%;
+            min-width: 180px;
+            padding: 14px 0;
+            border-radius: 10px;
+            border: none;
+            background: var(--accent);
+            color: #08112b;
+            font-weight: 700;
+            font-size: 1.13rem;
+            cursor: pointer;
+            transition: background .18s;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .btn:hover {
+            background: #a3bfff;
+        }
+
+        .switch-link {
+            color: var(--accent);
+            font-size: 0.98rem;
+            text-align: center;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-top: 2px;
+        }
+
+        .error {
+            color: var(--danger);
+            font-size: 0.98rem;
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        @media (max-width: 600px) {
+            .auth-container {
+                padding: 22px 6px 18px 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Cursor Glow -->
+    <div class="cursor-glow" id="cursorGlow"></div>
+    <div class="auth-container">
+        <div class="brand-row">
+            <div class="logo"><img src="assets/logo.png" alt="ReciVo Logo"></div>
+            <span class="brand-name">ReciVo</span>
+        </div>
+        <h2 id="authTitle">Sign Up</h2>
+        <div class="tab-row">
+            <button class="tab-btn active" id="tabSignup" type="button">Sign Up</button>
+            <button class="tab-btn" id="tabLogin" type="button">Login</button>
+        </div>
+        <form id="signupForm">
+            <label for="signupEmail">Email</label>
+            <input type="email" id="signupEmail" required autocomplete="email">
+            <label for="signupPassword">Password</label>
+            <input type="password" id="signupPassword" required autocomplete="new-password">
+            <button class="btn" type="submit">Create Account</button>
+            <div class="switch-link" id="directLogin" style="display:block;">Already have an account? Login</div>
+        </form>
+        <div id="signupSuccess"
+            style="display:none; color:var(--accent); text-align:center; font-size:1.05rem; margin-bottom:8px;">
+            Successfully signed up! You can now log in.</div>
+        <form id="loginForm" style="display:none;">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" required autocomplete="email">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" required autocomplete="current-password">
+            <button class="btn" type="submit">Login</button>
+        </form>
+        <div class="error" id="authError" style="display:none;"></div>
+    </div>
+
+    <!-- Firebase Auth Logic -->
+    <script type="module">
+        // Cursor Glow
+        const cursorGlow = document.getElementById('cursorGlow');
+        document.addEventListener('mousemove', (e) => {
+            cursorGlow.style.transform = `translate(${e.clientX - 120}px, ${e.clientY - 120}px)`;
+        });
+
+        // Firebase SDK Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBraC5kZ4rAhgcn-IQm4Asq5O8P_KVWVwA",
+            authDomain: "recivo-app.firebaseapp.com",
+            projectId: "recivo-app",
+            storageBucket: "recivo-app.firebasestorage.app",
+            messagingSenderId: "607888003933",
+            appId: "1:607888003933:web:7a3c48768aed67500d4eb4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Tabs
+        const tabSignup = document.getElementById('tabSignup');
+        const tabLogin = document.getElementById('tabLogin');
+        const signupForm = document.getElementById('signupForm');
+        const loginForm = document.getElementById('loginForm');
+        const authTitle = document.getElementById('authTitle');
+        const authError = document.getElementById('authError');
+
+        tabSignup.onclick = () => {
+            tabSignup.classList.add('active');
+            tabLogin.classList.remove('active');
+            loginForm.style.opacity = 0;
+            setTimeout(() => {
+                loginForm.style.display = 'none';
+                signupForm.style.display = '';
+                setTimeout(() => { signupForm.style.opacity = 1; }, 10);
+            }, 400);
+            signupForm.style.opacity = 0;
+            authTitle.textContent = 'Sign Up';
+            authError.style.display = 'none';
+        };
+
+        tabLogin.onclick = () => {
+            tabLogin.classList.add('active');
+            tabSignup.classList.remove('active');
+            signupForm.style.opacity = 0;
+            setTimeout(() => {
+                signupForm.style.display = 'none';
+                loginForm.style.display = '';
+                setTimeout(() => { loginForm.style.opacity = 1; }, 10);
+            }, 400);
+            loginForm.style.opacity = 0;
+            authTitle.textContent = 'Login';
+            authError.style.display = 'none';
+        };
+
+        // Firebase Sign Up
+        signupForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                document.getElementById('signupSuccess').style.display = 'block';
+                setTimeout(() => tabLogin.click(), 1200);
+            } catch (error) {
+                authError.style.display = 'block';
+                authError.textContent = error.message;
+            }
+        };
+
+        // Firebase Login
+        loginForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                window.location.href = 'index-main.html';
+            } catch (error) {
+                authError.style.display = 'block';
+                authError.textContent = error.message;
+            }
+        };
+
+        // Direct login link
+        document.getElementById('directLogin').onclick = () => {
+            tabLogin.classList.add('active');
+            tabSignup.classList.remove('active');
+            signupForm.style.display = 'none';
+            loginForm.style.display = '';
+            authTitle.textContent = 'Login';
+            authError.style.display = 'none';
+            document.getElementById('signupSuccess').style.display = 'none';
+            document.getElementById('directLogin').style.display = 'none';
+        };
+    </script>
+</body>
+</html>

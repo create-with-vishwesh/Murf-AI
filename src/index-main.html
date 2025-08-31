@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Voice Recipe Assistant</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+    .cursor-glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(122, 162, 255, 0.18), transparent 70%);
+      pointer-events: none;
+      transform: translate(-40%, -40%);
+      z-index: 0;
+      transition: transform 0.05s ease-out;
+    }
+
+    :root {
+      --bg1: #0b1220;
+      --bg2: #121b2e;
+      --card: #0e172a;
+      --muted: #9aa6c1;
+      --text: #e6efff;
+      --accent: #7aa2ff;
+      --accent-2: #9ef0a3;
+      --danger: #ff6b6b;
+      --ring: rgba(122, 162, 255, .35);
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 800px at 80% -10%, #24325f 0%, var(--bg1) 50%),
+        linear-gradient(180deg, #0a0f1f, var(--bg1));
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px
+    }
+
+    .logo {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(122, 162, 255, .25), rgba(158, 240, 163, .25));
+      border: 1px solid rgba(255, 255, 255, .08);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, .25);
+    }
+
+    .h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: .2px
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: 360px 1fr;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, 0));
+      border: 1px solid rgba(255, 255, 255, .08);
+      border-radius: 16px;
+      padding: 16px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, .28);
+    }
+
+    label {
+      display: block;
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px
+    }
+
+    select,
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, .12);
+      background: var(--card);
+      color: var(--text);
+      outline: none;
+      transition: box-shadow .2s, border-color .2s, transform .06s;
+    }
+
+    select:focus,
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--ring)
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform .06s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+      user-select: none;
+      font-weight: 600;
+    }
+
+    .btn:active {
+      transform: translateY(1px)
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #08112b;
+      border-radius: 10px;
+    }
+
+    .btn-secondary {
+      background: var(--card);
+      border-color: rgba(255, 255, 255, .12);
+      color: var(--text);
+      border-radius: 10px;
+    }
+
+    .btn-success {
+      background: var(--accent-2);
+      color: #052b10;
+      border-radius: 10px;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+      border-radius: 10px;
+    }
+
+    .btn:hover {
+      box-shadow: 0 8px 18px rgba(0, 0, 0, .25)
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, .12);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    ul,
+    ol {
+      margin: 8px 0;
+      padding-left: 18px
+    }
+
+    li {
+      margin: 6px 0
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    .title {
+      margin: 6px 0 2px;
+      font-weight: 700;
+      letter-spacing: .2px
+    }
+
+    .list-panel {
+      max-height: 52vh;
+      overflow: auto;
+      padding-right: 4px
+    }
+
+    .step-active {
+      color: var(--accent);
+      font-weight: 700
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 18px 0 8px
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0
+    }
+
+    .btn-logout {
+      background: var(--accent);
+      color: #08112b;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 28px;
+      font-size: 1.08rem;
+      box-shadow: 0 4px 18px rgba(122, 162, 255, 0.10);
+      cursor: pointer;
+      transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+      outline: none;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-logout:hover {
+      background: #a3bfff;
+      color: #08112b;
+      box-shadow: 0 8px 24px rgba(122, 162, 255, 0.18);
+      transform: translateY(-2px) scale(1.04);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Cursor Glow -->
+  <div class="cursor-glow" id="cursorGlow"></div>
+  <!-- User Avatar (injected by JS) -->
+  <div id="userAvatarContainer" style="position:fixed;top:28px;left:28px;z-index:30;"></div>
+    <div class="container">
+        <button id="logoutBtn" class="btn btn-logout"
+            style="position:absolute; top:28px; right:38px; z-index:20;">Logout</button>
+        <div style="display:flex; flex-direction:column; align-items:center;">
+            <div class="h1" id="recivoHome"
+                style="font-size:2.5rem; font-weight:800; margin-bottom:2px; cursor:pointer; text-decoration:none #7aa2ff;">
+                ReciVo</div>
+            <div class="sub" style="font-size:1.1rem; color:var(--accent); margin-bottom:20px;">Cook hands-free with
+                narrated steps</div>
+        </div>
+
+        <main class="grid">
+            <!-- Controls -->
+            <section class="card stack">
+                <div>
+                    <label for="searchBox">Search recipes</label>
+                    <input id="searchBox" type="text" placeholder="Type to filter…" autocomplete="off" />
+                </div>
+
+                <div>
+                    <label for="recipeSelect">Choose a recipe</label>
+                    <select id="recipeSelect" aria-label="Recipe select"></select>
+                </div>
+
+                <div class="stack">
+                    <div class="title">Narration</div>
+                    <div class="row">
+                        <button id="btnSpeakAll" class="btn btn-primary" title="Speak ingredients and steps">
+                            <!-- speaker icon -->
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M3 10v4h4l5 4V6L7 10H3z" fill="#0b1220" />
+                                <path d="M16 7a5 5 0 010 10" stroke="#0b1220" stroke-width="2" stroke-linecap="round" />
+                                <path d="M18.5 4.5a9 9 0 010 15" stroke="#0b1220" stroke-width="2"
+                                    stroke-linecap="round" opacity=".5" />
+                            </svg>
+                            <span>Speak all</span>
+                        </button>
+                        <button id="btnStop" class="btn btn-danger" title="Stop speaking">
+                            <!-- stop icon -->
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <rect x="6" y="6" width="12" height="12" rx="2" />
+                            </svg>
+                            <span>Stop</span>
+                        </button>
+                    </div>
+                    <p class="muted">Tip: you can speak steps one by one below.</p>
+                </div>
+
+                <div class="stack">
+                    <div class="title">Step controls</div>
+                    <div class="row">
+                        <button id="btnPrev" class="btn btn-secondary" title="Previous step">
+                            <!-- left arrow -->
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            <span>Prev</span>
+                        </button>
+                        <span id="stepChip" class="chip" aria-live="polite">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <circle cx="12" cy="12" r="4" />
+                            </svg>
+                            Step 0 / 0
+                        </span>
+                        <button id="btnNext" class="btn btn-secondary" title="Next step">
+                            <!-- right arrow -->
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                            <span>Next</span>
+                        </button>
+                        <button id="btnSpeakStep" class="btn btn-success" title="Speak current step">
+                            <!-- small speaker -->
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M3 10v4h4l5 4V6L7 10H3z" fill="#052b10" />
+                            </svg>
+                            <span>Speak step</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stack">
+                    <div class="title">Voice & Language</div>
+                    <div class="row" style="width:100%">
+                        <select id="voiceSelect" class="flex-1" disabled>
+                            <option>Voices will appear after Murf integration</option>
+                        </select>
+                    </div>
+                    <div class="row" style="width:100%">
+                        <select id="langSelect" class="flex-1" disabled>
+                            <option>Languages will appear after Murf integration</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recipe detail -->
+            <section class="card">
+                <div class="stack">
+                    <h2 id="recipeTitle" class="h1" style="font-size:20px">Recipe</h2>
+
+                    <div>
+                        <div class="title">Ingredients</div>
+                        <ul id="ingredientsList" class="list-panel"></ul>
+                    </div>
+
+                    <div>
+                        <div class="title">Steps</div>
+                        <ol id="stepsList" class="list-panel"></ol>
+                    </div>
+                </div>
+                <audio id="player" hidden></audio>
+            </section>
+        </main>
+
+        <footer>
+            Built with ❤️ for Murf AI Coding Challenge 2025
+        </footer>
+    </div>
+
+    <!-- Firebase Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBraC5kZ4rAhgcn-IQm4Asq5O8P_KVWVwA",
+            authDomain: "recivo-app.firebaseapp.com",
+            projectId: "recivo-app",
+            storageBucket: "recivo-app.firebasestorage.app",
+            messagingSenderId: "607888003933",
+            appId: "1:607888003933:web:7a3c48768aed67500d4eb4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+    // User avatar logic (top left corner)
+    const avatarContainer = document.getElementById('userAvatarContainer');
+    let userAvatar = null;
+
+    function createUserAvatar(email) {
+      if (userAvatar) return;
+      userAvatar = document.createElement('div');
+      userAvatar.style.width = '36px';
+      userAvatar.style.height = '36px';
+      userAvatar.style.background = 'var(--accent)';
+      userAvatar.style.color = '#08112b';
+      userAvatar.style.borderRadius = '50%';
+      userAvatar.style.display = 'flex';
+      userAvatar.style.alignItems = 'center';
+      userAvatar.style.justifyContent = 'center';
+      userAvatar.style.fontWeight = 'bold';
+      userAvatar.style.fontSize = '1.25rem';
+      userAvatar.style.cursor = 'pointer';
+      userAvatar.style.boxShadow = '0 2px 8px rgba(122,162,255,0.10)';
+      userAvatar.style.position = 'relative';
+      userAvatar.setAttribute('tabindex', '0');
+      userAvatar.textContent = email ? email[0].toUpperCase() : '?';
+
+      // Tooltip
+      const tooltip = document.createElement('div');
+      tooltip.textContent = email || '';
+      tooltip.style.position = 'absolute';
+      tooltip.style.left = '110%';
+      tooltip.style.top = '50%';
+      tooltip.style.transform = 'translateY(-50%)';
+      tooltip.style.background = 'var(--accent)';
+      tooltip.style.color = '#08112b';
+      tooltip.style.padding = '6px 10px';
+      tooltip.style.borderRadius = '8px';
+      tooltip.style.fontSize = '0.98rem';
+      tooltip.style.whiteSpace = 'nowrap';
+      tooltip.style.opacity = '0';
+      tooltip.style.pointerEvents = 'none';
+      tooltip.style.transition = 'opacity 0.18s';
+      tooltip.style.boxShadow = '0 4px 18px rgba(122,162,255,0.10)';
+      tooltip.style.fontWeight = '600';
+      tooltip.style.letterSpacing = '0.1px';
+      tooltip.style.zIndex = '40';
+
+      // Arrow
+      const arrow = document.createElement('div');
+      arrow.style.position = 'absolute';
+      arrow.style.left = '-7px';
+      arrow.style.top = '50%';
+      arrow.style.transform = 'translateY(-50%)';
+      arrow.style.width = '0';
+      arrow.style.height = '0';
+      arrow.style.borderTop = '7px solid transparent';
+      arrow.style.borderBottom = '7px solid transparent';
+      arrow.style.borderRight = '7px solid var(--accent)';
+      tooltip.appendChild(arrow);
+
+      userAvatar.appendChild(tooltip);
+
+      // Show/hide tooltip on hover/focus
+      userAvatar.addEventListener('mouseenter', () => { tooltip.style.opacity = '1'; });
+      userAvatar.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
+      userAvatar.addEventListener('focus', () => { tooltip.style.opacity = '1'; });
+      userAvatar.addEventListener('blur', () => { tooltip.style.opacity = '0'; });
+
+      avatarContainer.appendChild(userAvatar);
+    }
+
+    function removeUserAvatar() {
+      if (userAvatar && userAvatar.parentNode) {
+        userAvatar.parentNode.removeChild(userAvatar);
+        userAvatar = null;
+      }
+    }
+
+        // Protect page
+        onAuthStateChanged(auth, (user) => {
+      if (user) {
+        createUserAvatar(user.email);
+      } else {
+        removeUserAvatar();
+        window.location.href = "auth.html";
+      }
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        window.location.href = "landing_new.html";
+      } catch (error) {
+        console.error("Logout error:", error.message);
+      }
+        });
+    </script>
+
+    <!-- Your original script block remains here for UI functionality -->
+        <script>
+        // Glowing cursor effect
+        const cursorGlow = document.getElementById('cursorGlow');
+        document.addEventListener('mousemove', (e) => {
+            cursorGlow.style.transform = `translate(${e.clientX - 120}px, ${e.clientY - 120}px)`;
+        });
+
+        // Warn user about data loss on refresh/close
+        window.addEventListener('beforeunload', function (e) {
+            const searchBox = document.getElementById('searchBox');
+            const recipeSelect = document.getElementById('recipeSelect');
+            let hasData = false;
+            if (searchBox && searchBox.value.trim() !== '') hasData = true;
+            if (recipeSelect && recipeSelect.value && recipeSelect.value !== recipeSelect.options[0]?.value) hasData = true;
+            document.querySelectorAll('input, textarea, select').forEach(el => {
+                if (el.value && el.value.trim() !== '') hasData = true;
+            });
+            if (hasData) {
+                const message = 'You have entered or selected data. Refreshing or leaving this page may cause your data to be lost.';
+                e.preventDefault();
+                e.returnValue = message;
+                return message;
+            }
+        });
+        // -----------------------------------------------
+        // Data
+        // -----------------------------------------------
+        const RECIPES = [
+            {
+                id: 'pasta_alfredo',
+                title: 'Creamy Garlic Pasta',
+                ingredients: [
+                    '200 g pasta',
+                    '2 tbsp butter',
+                    '3 cloves garlic, minced',
+                    '1 cup milk',
+                    '1/2 cup grated cheese',
+                    'Salt and pepper to taste'
+                ],
+                steps: [
+                    'Boil pasta in salted water until al dente, then drain.',
+                    'Melt butter in a pan and sauté garlic for 30 seconds.',
+                    'Add milk and bring to a gentle simmer.',
+                    'Stir in cheese until smooth and creamy.',
+                    'Toss pasta in the sauce. Season with salt and pepper.',
+                    'Serve hot.'
+                ]
+            },
+            {
+                id: 'masala_omelette',
+                title: 'Masala Omelette Sandwich',
+                ingredients: [
+                    '2 eggs',
+                    '1/4 onion, finely chopped',
+                    '1 green chili, chopped',
+                    'Fresh coriander',
+                    '2 slices bread',
+                    'Salt, pepper, butter'
+                ],
+                steps: [
+                    'Whisk eggs with onion, chili, coriander, salt, and pepper.',
+                    'Cook omelette in a buttered pan until set.',
+                    'Toast bread and assemble the sandwich.'
+                ]
+            },
+            {
+                id: 'chai',
+                title: 'Masala Chai',
+                ingredients: [
+                    '2 cups water',
+                    '1 cup milk',
+                    '2 tsp tea leaves',
+                    'Sugar to taste',
+                    'Ginger and cardamom'
+                ],
+                steps: [
+                    'Boil water with ginger and cardamom for 2 minutes.',
+                    'Add tea leaves and simmer for 1 minute.',
+                    'Pour in milk and sugar. Bring to a gentle boil.',
+                    'Strain into cups and serve hot.'
+                ]
+            }
+        ];
+
+        // -----------------------------------------------
+        // Elements & State
+        // -----------------------------------------------
+        const recipeSelect = document.getElementById('recipeSelect');
+        const searchBox = document.getElementById('searchBox');
+        const ingredientsList = document.getElementById('ingredientsList');
+        const stepsList = document.getElementById('stepsList');
+        const recipeTitle = document.getElementById('recipeTitle');
+        const stepChip = document.getElementById('stepChip');
+
+        const btnSpeakAll = document.getElementById('btnSpeakAll');
+        const btnSpeakStep = document.getElementById('btnSpeakStep');
+        const btnStop = document.getElementById('btnStop');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+
+        const player = document.getElementById('player');
+
+        let current = { index: 0, step: 0 };
+
+        // -----------------------------------------------
+        // Rendering
+        // -----------------------------------------------
+        function populateSelect(filter = '') {
+            const q = filter.trim().toLowerCase();
+            recipeSelect.innerHTML = '';
+            RECIPES.filter(r => r.title.toLowerCase().includes(q)).forEach((r) => {
+                const opt = document.createElement('option');
+                opt.value = r.id;
+                opt.textContent = r.title;
+                recipeSelect.appendChild(opt);
+            });
+            if (recipeSelect.options.length === 0) {
+                const opt = document.createElement('option');
+                opt.textContent = 'No matches';
+                opt.disabled = true;
+                recipeSelect.appendChild(opt);
+            }
+        }
+
+        function render(index) {
+            const recipe = RECIPES[index];
+            if (!recipe) return;
+
+            recipeTitle.textContent = recipe.title;
+            ingredientsList.innerHTML = '';
+            stepsList.innerHTML = '';
+
+            recipe.ingredients.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                ingredientsList.appendChild(li);
+            });
+
+            recipe.steps.forEach((s, i) => {
+                const li = document.createElement('li');
+                li.textContent = s;
+                if (i === current.step) li.classList.add('step-active');
+                stepsList.appendChild(li);
+            });
+
+            current.index = index;
+            current.step = 0;
+            updateStepChip();
+        }
+
+        function updateStepChip() {
+            const recipe = RECIPES[current.index];
+            const total = recipe ? recipe.steps.length : 0;
+            const shown = total === 0 ? 0 : current.step + 1;
+            stepChip.innerHTML = `
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="4"/></svg>
+                Step ${shown} / ${total}
+            `;
+            // highlight current step
+            [...stepsList.children].forEach((li, idx) => {
+                li.classList.toggle('step-active', idx === current.step);
+                if (idx === current.step) li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+        }
+
+        // -----------------------------------------------
+        // Temporary Browser Speech (fallback)
+        // -----------------------------------------------
+        function speak(text) {
+            stopSpeaking();
+            if (!('speechSynthesis' in window)) {
+                alert('SpeechSynthesis not supported in this browser.');
+                return;
+            }
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.rate = 1.0; utter.pitch = 1.0; utter.volume = 1.0;
+            speechSynthesis.speak(utter);
+        }
+        function stopSpeaking() {
+            if ('speechSynthesis' in window) speechSynthesis.cancel();
+            if (!player.paused) { player.pause(); player.currentTime = 0; }
+        }
+
+        // -----------------------------------------------
+        // Murf Integration Placeholders
+        // -----------------------------------------------
+        async function fetchMurfVoices() {
+            // TODO: Replace with Murf voices endpoint call using your backend proxy.
+            // 1) Call your server: GET /api/murf/voices  (server adds Authorization header securely)
+            // 2) Populate #voiceSelect and #langSelect with results.
+            // Keep disabled until integrated.
+            return [];
+        }
+
+        async function speakWithMurf(text) {
+      // Murf TTS integration: call backend, play audio, fallback to browser speech on error
+      try {
+        stopSpeaking();
+        const response = await fetch('http://localhost:5000/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.audioUrl) throw new Error(data.error || 'TTS failed');
+        player.src = data.audioUrl;
+        player.hidden = false;
+        await player.play();
+      } catch (err) {
+        console.error('Murf TTS failed, falling back to browser speech:', err);
+        speak(text);
+      }
+        }
+
+        // -----------------------------------------------
+        // Events
+        // -----------------------------------------------
+        recipeSelect.addEventListener('change', () => {
+            const id = recipeSelect.value;
+            const index = RECIPES.findIndex(r => r.id === id);
+            if (index !== -1) render(index);
+        });
+
+        searchBox.addEventListener('input', (e) => {
+            populateSelect(e.target.value);
+            const firstId = recipeSelect.value;
+            const idx = RECIPES.findIndex(r => r.id === firstId);
+            if (idx !== -1) render(idx);
+        });
+
+        btnSpeakAll.addEventListener('click', async () => {
+            const r = RECIPES[current.index];
+            const text = `Recipe: ${r.title}. Ingredients: ${r.ingredients.join(', ')}. Steps: ${r.steps.join('. ')}`;
+            await speakWithMurf(text);
+        });
+
+        btnSpeakStep.addEventListener('click', async () => {
+            const r = RECIPES[current.index];
+            if (!r) return;
+            const stepText = r.steps[current.step] || '';
+            await speakWithMurf(`Step ${current.step + 1}. ${stepText}`);
+        });
+
+        btnStop.addEventListener('click', stopSpeaking);
+
+        btnPrev.addEventListener('click', () => {
+            const r = RECIPES[current.index];
+            if (!r) return;
+            current.step = Math.max(0, current.step - 1);
+            updateStepChip();
+        });
+
+        btnNext.addEventListener('click', () => {
+            const r = RECIPES[current.index];
+            if (!r) return;
+            current.step = Math.min(r.steps.length - 1, current.step + 1);
+            updateStepChip();
+        });
+
+        // -----------------------------------------------
+        // Init
+        // -----------------------------------------------
+        populateSelect('');
+        const initialId = recipeSelect.value;
+        const initialIndex = RECIPES.findIndex(r => r.id === initialId);
+        render(initialIndex === -1 ? 0 : initialIndex);
+
+        // Optional: prefetch future Murf data later
+        // fetchMurfVoices();
+    </script>
+</body>
+
+</html>

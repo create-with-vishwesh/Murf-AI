@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReciVo - Your Smart Recipe Voice Assistant</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <style>
+        :root {
+            --bg1: #0b1220;
+            --bg2: #121b2e;
+            --card: #0e172a;
+            --muted: #9aa6c1;
+            --text: #e6efff;
+            --accent: #7aa2ff;
+            --accent-2: #9ef0a3;
+            --danger: #ff6b6b;
+            --ring: rgba(122, 162, 255, .35);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(1200px 800px at 80% -10%, #24325f 0%, var(--bg1) 50%),
+                linear-gradient(180deg, #0a0f1f, var(--bg1));
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 0;
+            position: relative;
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(122, 162, 255, .25), rgba(158, 240, 163, .25));
+            border: 1px solid rgba(255, 255, 255, .08);
+            backdrop-filter: blur(6px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .25);
+            font-weight: bold;
+            color: var(--accent);
+            transition: transform 0.2s ease;
+        }
+
+        .logo:hover {
+            transform: rotate(10deg) scale(1.05);
+        }
+
+        .h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+
+        .sub {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero h2 {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            animation: fadeInUp 1s ease;
+        }
+
+        .hero p {
+            color: var(--muted);
+            font-size: 18px;
+            max-width: 700px;
+            margin: 0 auto 24px;
+            animation: fadeInUp 1.3s ease;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: transform .15s ease, box-shadow .3s ease;
+            user-select: none;
+            font-weight: 600;
+            font-size: 18px;
+            position: relative;
+            z-index: 10;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #08112b;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 18px rgba(122, 162, 255, .5);
+            transform: scale(1.05);
+        }
+
+        .features {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            margin-top: 60px;
+        }
+
+        .card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, 0));
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 16px;
+            padding: 24px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .28);
+            text-align: center;
+            transition: transform 0.25s ease, box-shadow 0.3s ease;
+        }
+
+        .card h4 {
+            font-size: 20px;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .card p {
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 14px 28px rgba(122, 162, 255, .3);
+        }
+
+        footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+            padding: 18px 0 8px;
+            margin-top: 60px;
+        }
+
+        /* Cursor Glow */
+        .cursor-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(122, 162, 255, 0.18), transparent 70%);
+            pointer-events: none;
+            transform: translate(-40%, -40%);
+            z-index: 0;
+            transition: transform 0.05s ease-out;
+        }
+
+        /* Keyframes */
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Cursor Glow -->
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <header class="container">
+        <div class="brand">
+            <div class="logo"><img src="assets/logo.png" alt="ReciVo Logo"
+                    style="width:28px; height:28px; object-fit:contain; display:block;"></div>
+            <div>
+                <div class="h1">ReciVo</div>
+                <div class="sub">Smart Recipe Voice Assistant</div>
+            </div>
+        </div>
+        <nav>
+            <a href="#features" class="sub" style="margin-right:18px;">Features</a>
+            <a href="auth.html" class="btn btn-primary">Get Started</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h2>Cook Smarter with Voice</h2>
+        <p>ReciVo helps you follow recipes hands-free. Just listen, cook, and enjoy stress-free cooking with
+            voice-guided steps.</p>
+    <a href="auth.html" class="btn btn-primary">Start Cooking</a>
+    </section>
+
+    <div class="container">
+        <section id="features">
+            <h3 style="text-align:center; font-size:28px; margin-bottom:28px;">Why Choose ReciVo?</h3>
+            <div class="features">
+                <div class="card">
+                    <h4>Voice-Guided Cooking</h4>
+                    <p>Let ReciVo read out each step so you can cook hands-free, keeping your device clean and your focus on the food.</p>
+                </div>
+                <div class="card">
+                    <h4>Smart Step Navigation</h4>
+                    <p>Move between recipe steps using simple voice commands or on-screen controls—no more scrolling with messy hands.</p>
+                </div>
+                <div class="card">
+                    <h4>Diverse Recipe Library</h4>
+                    <p>Access a curated collection of recipes for every taste, from quick snacks to gourmet meals, all in one place.</p>
+                </div>
+                <div class="card">
+                    <h4>Personalized Suggestions</h4>
+                    <p>Receive recipe recommendations tailored to your preferences, dietary needs, and cooking history.</p>
+                </div>
+                <div class="card">
+                    <h4>Ingredient & Step Highlighting</h4>
+                    <p>See the current step and ingredients highlighted as you cook, making it easy to follow along without losing your place.</p>
+                </div>
+                <div class="card">
+                    <h4>Seamless Device Experience</h4>
+                    <p>Enjoy a responsive, modern interface that works beautifully on phones, tablets, and desktops—perfect for any kitchen setup.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="start" style="text-align:center; margin-top:80px;">
+            <h3 style="font-size:28px; margin-bottom:16px;">Ready to Cook?</h3>
+            <p style="color:var(--muted); margin-bottom:24px;">Click below to start your voice-guided cooking experience
+                with ReciVo.</p>
+            <a href="auth.html" class="btn btn-primary">Launch Assistant</a>
+        </section>
+    </div>
+
+    <footer>
+        © 2025 ReciVo. All rights reserved.
+    </footer>
+
+    <script>
+        const cursorGlow = document.getElementById('cursorGlow');
+        document.addEventListener('mousemove', (e) => {
+            cursorGlow.style.transform = `translate(${e.clientX - 120}px, ${e.clientY - 120}px)`; // Adjust offset
+        });
+    </script>
+</body>
+
+</html>
